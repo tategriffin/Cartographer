@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.22823.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cartographer", "Cartographer\Cartographer\Cartographer.csproj", "{018F07ED-F196-468A-8CCC-B878607880C8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cartographer.Vsix", "Cartographer\Cartographer.Vsix\Cartographer.Vsix.csproj", "{E210189D-FF36-47E1-B9DC-2CC95219770D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{018F07ED-F196-468A-8CCC-B878607880C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{018F07ED-F196-468A-8CCC-B878607880C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{018F07ED-F196-468A-8CCC-B878607880C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{018F07ED-F196-468A-8CCC-B878607880C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E210189D-FF36-47E1-B9DC-2CC95219770D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E210189D-FF36-47E1-B9DC-2CC95219770D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E210189D-FF36-47E1-B9DC-2CC95219770D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E210189D-FF36-47E1-B9DC-2CC95219770D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,8 @@
+C:\WS\Cartographer\Cartographer\Cartographer.Vsix\bin\Debug\Cartographer.vsix
+C:\WS\Cartographer\Cartographer\Cartographer.Vsix\bin\Debug\extension.vsixmanifest
+C:\WS\Cartographer\Cartographer\Cartographer.Vsix\bin\Debug\Cartographer.dll
+C:\WS\Cartographer\Cartographer\Cartographer.Vsix\bin\Debug\Cartographer.pdb
+C:\WS\Cartographer\Cartographer\Cartographer.Vsix\obj\Debug\Cartographer.Vsix.csprojResolveAssemblyReference.cache
+C:\WS\Cartographer\Cartographer\Cartographer.Vsix\obj\Debug\Cartographer.dll
+C:\WS\Cartographer\Cartographer\Cartographer.Vsix\obj\Debug\Cartographer.pdb
+C:\WS\Cartographer\Cartographer\Cartographer.Vsix\obj\Debug\extension.vsixmanifest
