@@ -51,36 +51,21 @@ namespace Cartographer
             var secondParm = methodDecl.ReturnType;
             if (secondParm == null) return document.Project.Solution;
 
-            var destinationVariableName = "dest";
-
-            // Class1 dest = new Class1();
-            var destinationVariableDeclarationStatement = BuildVariableDeclarationStatement(methodDecl.ReturnType, destinationVariableName);
-
-            //PropertyDecalartionSyntax ?
             var model = await document.GetSemanticModelAsync(cancellationToken);
-
             var sourceSymbol = model.GetDeclaredSymbol(firstParm);
-            var destSymbol = model.GetSymbolInfo(secondParm).Symbol;
+            var targetSymbol = model.GetSymbolInfo(secondParm).Symbol;
 
 
             var comp = document.Project.GetCompilationAsync(cancellationToken).Result;
             //TODO: Better way to do this instead of .ToDisplayString?
             var sourceType = comp.GetTypeByMetadataName(sourceSymbol.ToDisplayString());
-            var destType = comp.GetTypeByMetadataName(destSymbol.ToDisplayString());
+            var targetType = comp.GetTypeByMetadataName(targetSymbol.ToDisplayString());
 
-            var mappingStatements = BuildSourceToDestinationMappingStatements(sourceType, firstParm.Identifier.ValueText, destType, destinationVariableName);
+            //TODO: Determine target TypeSyntax from targetSymbol or targetType
+            var mapInfo = new MapPair(sourceType, firstParm.Identifier.ValueText, targetType, "target", secondParm);
 
-            // return dest;
-            var returnStatement = BuildReturnStatement(destinationVariableName);
-
-
-            var allStatements = new List<StatementSyntax>();
-            allStatements.Add(destinationVariableDeclarationStatement);
-            allStatements.AddRange(mappingStatements);
-            allStatements.Add(returnStatement);
-
-            var methodBody = SyntaxFactory.Block()
-                .WithStatements(SyntaxFactory.List<StatementSyntax>(allStatements));
+            var bodyBuilder = new MethodBodyBuilder();
+            var methodBody = bodyBuilder.BuildMethodBody(mapInfo);
 
             //root syntax tree
             var treeRoot = await document.GetSyntaxRootAsync(cancellationToken);
@@ -92,78 +77,5 @@ namespace Cartographer
             return newSolution;
         }
 
-        private List<StatementSyntax> BuildSourceToDestinationMappingStatements(INamedTypeSymbol sourceSymbol, string sourceVariableName, INamedTypeSymbol destSymbol, string destVariableName)
-        {
-            var mappingStatements = new List<StatementSyntax>();
-
-            //TODO: Improve the where clause selection criteria
-            var srcProperties = sourceSymbol.GetMembers().OfType<IPropertySymbol>().Where(p => !p.IsStatic && !p.IsWriteOnly && p.DeclaredAccessibility == Accessibility.Public).ToList();
-            var destProperties = destSymbol.GetMembers().OfType<IPropertySymbol>().Where(p => !p.IsStatic && !p.IsReadOnly && p.DeclaredAccessibility == Accessibility.Public).ToList();
-
-            //TODO: This will only work for exact matches
-            foreach (var srcProperty in srcProperties)
-            {
-                var destProperty = destProperties.FirstOrDefault(p => p.Name == srcProperty.Name);
-                if (destProperty != null)
-                {
-                    //add mapping statement
-                    var stmt = SyntaxFactory.ExpressionStatement(
-                        SyntaxFactory.AssignmentExpression(
-                            SyntaxKind.SimpleAssignmentExpression,
-                            SyntaxFactory.MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                SyntaxFactory.IdentifierName(destVariableName),
-                                SyntaxFactory.IdentifierName(destProperty.Name)),
-                            SyntaxFactory.MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                SyntaxFactory.IdentifierName(sourceVariableName),
-                                SyntaxFactory.IdentifierName(srcProperty.Name))
-                            )
-                        );
-
-                    mappingStatements.Add(stmt);
-
-                    //Only map once
-                    destProperties.Remove(destProperty);
-                }
-            }
-
-            return mappingStatements;
-        }
-
-
-        private ReturnStatementSyntax BuildReturnStatement(string destinationVariableName)
-        {
-            return SyntaxFactory.ReturnStatement(
-                SyntaxFactory.Token(SyntaxKind.ReturnKeyword),
-                SyntaxFactory.IdentifierName(destinationVariableName),
-                SyntaxFactory.Token(SyntaxFactory.TriviaList(), SyntaxKind.SemicolonToken, SyntaxFactory.TriviaList())
-                )
-                .WithLeadingTrivia(SyntaxFactory.TriviaList(SyntaxFactory.CarriageReturnLineFeed, SyntaxFactory.CarriageReturnLineFeed));
-        }
-
-        private LocalDeclarationStatementSyntax BuildVariableDeclarationStatement(TypeSyntax destinationVariableType, string destinationVariableName)
-        {
-            return SyntaxFactory.LocalDeclarationStatement(BuildVariableDeclaration(destinationVariableType,
-                destinationVariableName))
-                .WithSemicolonToken(SyntaxFactory.Token(SyntaxFactory.TriviaList(), SyntaxKind.SemicolonToken,
-                    SyntaxFactory.TriviaList(SyntaxFactory.CarriageReturnLineFeed, SyntaxFactory.CarriageReturnLineFeed)));
-        }
-
-        private VariableDeclarationSyntax BuildVariableDeclaration(TypeSyntax variableType, string variableName)
-        {
-            return SyntaxFactory.VariableDeclaration(variableType,
-                    SyntaxFactory.SingletonSeparatedList<VariableDeclaratorSyntax>(
-                        SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier(SyntaxFactory.TriviaList(), variableName, SyntaxFactory.TriviaList(SyntaxFactory.Space)))
-                            .WithInitializer(
-                                SyntaxFactory.EqualsValueClause(
-                                    SyntaxFactory.ObjectCreationExpression(SyntaxFactory.IdentifierName(variableType.ToString()))
-                                    .WithNewKeyword(SyntaxFactory.Token(SyntaxFactory.TriviaList(SyntaxFactory.Space), SyntaxKind.NewKeyword, SyntaxFactory.TriviaList(SyntaxFactory.Space)))
-                                    .WithArgumentList(SyntaxFactory.ArgumentList())
-                                )
-                            )
-                    )
-            );
-        }
     }
 }

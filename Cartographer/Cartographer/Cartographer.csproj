@@ -34,6 +34,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CodeRefactoringProvider.cs" />
+    <Compile Include="MapMaker.cs" />
+    <Compile Include="MapPair.cs" />
+    <Compile Include="MethodBodyBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
