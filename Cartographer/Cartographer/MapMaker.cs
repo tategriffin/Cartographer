@@ -21,8 +21,14 @@ namespace Cartographer
             var mappingStatements = new List<StatementSyntax>();
 
             //TODO: Improve the where clause selection criteria
-            var sourceProperties = sourceSymbol.GetMembers().OfType<IPropertySymbol>().Where(p => !p.IsStatic && !p.IsWriteOnly && p.DeclaredAccessibility == Accessibility.Public).ToList();
-            var targetProperties = targetSymbol.GetMembers().OfType<IPropertySymbol>().Where(p => !p.IsStatic && !p.IsReadOnly && p.DeclaredAccessibility == Accessibility.Public).ToList();
+            var sourceProperties = sourceSymbol.GetMembers().OfType<IPropertySymbol>()
+                .Where(p => !p.IsStatic && !p.IsWriteOnly && (p.DeclaredAccessibility == Accessibility.Public || p.DeclaredAccessibility == Accessibility.Internal))
+                .OrderBy(p => p.Name)
+                .ToList();
+            var targetProperties = targetSymbol.GetMembers().OfType<IPropertySymbol>()
+                .Where(p => !p.IsStatic && !p.IsReadOnly && (p.DeclaredAccessibility == Accessibility.Public || p.DeclaredAccessibility == Accessibility.Internal))
+                .OrderBy(p => p.Name)
+                .ToList();
 
             //TODO: This will only work for exact matches
             foreach (var srcProperty in sourceProperties)
