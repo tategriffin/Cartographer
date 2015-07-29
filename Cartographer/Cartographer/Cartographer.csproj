@@ -36,6 +36,8 @@
     <Compile Include="CodeRefactoringProvider.cs" />
     <Compile Include="MapMaker.cs" />
     <Compile Include="MapPair.cs" />
+    <Compile Include="Mappers\FirstParameterToReturnTypeClassMapper.cs" />
+    <Compile Include="IMapper.cs" />
     <Compile Include="MethodBodyBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
