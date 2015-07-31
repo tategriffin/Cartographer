@@ -24,10 +24,11 @@ namespace Cartographer
             // Find the node at the selection.
             var node = root.FindNode(context.Span);
 
-            // Only offer a refactoring if the selected node is a method declaration node with a signature pattern we recognize.
+            // Only offer a refactoring if the selected node is a method declaration node.
             var methodDecl = node as MethodDeclarationSyntax;
             if (methodDecl == null) return;
 
+            // Only offer a refactoring if the method declaration node matches a signature pattern we recognize.
             var supportedMappers = BuildMapperList();
             foreach (var mapper in supportedMappers)
             {
