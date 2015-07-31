@@ -33,7 +33,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="CodeRefactoringProvider.cs" />
+    <Compile Include="CartographerCodeRefactoringProvider.cs" />
     <Compile Include="MapItem.cs" />
     <Compile Include="Mappers\ClassMapper.cs" />
     <Compile Include="Mappers\FirstParameterToReturnTypeClassMapper.cs" />
