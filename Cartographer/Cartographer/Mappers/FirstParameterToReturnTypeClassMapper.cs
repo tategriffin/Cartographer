@@ -10,26 +10,13 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Cartographer.Mappers
 {
-    internal class FirstParameterToReturnTypeClassMapper : IMapper
+    internal class FirstParameterToReturnTypeClassMapper : ClassMapper, IMapper
     {
-        private MethodDeclarationSyntax MethodDeclaration;
-        private Document CodeDocument;
-        private SemanticModel CodeModel;
+        public string Description { get; private set; } = "Map first parameter to return type";
 
-        private ParameterSyntax FirstParameterSyntax;
-        private INamedTypeSymbol FirstParameterSymbol;
-
-        private TypeSyntax ReturnTypeSyntax;
-        private INamedTypeSymbol ReturnTypeSymbol;
-
-        public string Description { get { return BuildMapperDescription(); } }
-
-        private string BuildMapperDescription()
+        private string BuildMapperDescription(MethodDeclarationSyntax methodDeclaration, SemanticModel model, INamedTypeSymbol source, INamedTypeSymbol target)
         {
-            string sourceDesc = (FirstParameterSymbol == null ? "first parameter" : FirstParameterSymbol.ToMinimalDisplayString(CodeModel, MethodDeclaration.SpanStart));
-            string targetDesc = (ReturnTypeSymbol == null ? "return type" : ReturnTypeSymbol.ToMinimalDisplayString(CodeModel, MethodDeclaration.SpanStart));
-
-            return $"Map {sourceDesc} to {targetDesc}";
+            return $"Map {source.ToMinimalDisplayString(model, methodDeclaration.SpanStart)} to {target.ToMinimalDisplayString(model, methodDeclaration.SpanStart)}";
         }
 
         /// <summary>
@@ -38,29 +25,51 @@ namespace Cartographer.Mappers
         /// </summary>
         public async Task<bool> CanMap(Document document, MethodDeclarationSyntax methodDeclaration)
         {
-            return (CanMapBasedOnSyntax(methodDeclaration) && await CanMapBasedOnSemanticModel(document));
+            if (methodDeclaration.ReturnType.IsKind(SyntaxKind.VoidKeyword)) return false;
+            if (methodDeclaration.ReturnType.IsKind(SyntaxKind.PredefinedType)) return false;
+
+            ParameterSyntax firstParameterSyntax = methodDeclaration.ParameterList?.Parameters.FirstOrDefault();
+            if (firstParameterSyntax == null) return false;
+
+            TypeSyntax returnTypeSyntax = methodDeclaration.ReturnType;
+            if (returnTypeSyntax == null) return false;
+
+            SemanticModel model = await document.GetSemanticModelAsync();
+
+            var firstParm = model.GetDeclaredSymbol(firstParameterSyntax);
+            INamedTypeSymbol firstParameterSymbol = firstParm.Type as INamedTypeSymbol;
+            if (firstParameterSymbol == null) return false;
+            if (firstParameterSymbol.TypeKind == TypeKind.Enum) return false;
+
+            var returnType = model.GetSymbolInfo(returnTypeSyntax);
+            INamedTypeSymbol returnTypeSymbol = returnType.Symbol as INamedTypeSymbol;
+            if (returnTypeSymbol == null) return false;
+            if (returnTypeSymbol.TypeKind == TypeKind.Enum) return false;
+
+            Description = BuildMapperDescription(methodDeclaration, model, firstParameterSymbol, returnTypeSymbol);
+            return true;
         }
 
-        public async Task<Solution> Map(CancellationToken cancellationToken)
+        public async Task<Solution> Map(Document document, MethodDeclarationSyntax methodDeclaration, CancellationToken cancellationToken)
         {
-            if (CodeDocument == null) return null;
-            if (MethodDeclaration == null) return CodeDocument.Project.Solution;
-            if (CodeModel == null) return CodeDocument.Project.Solution;
-            if (FirstParameterSyntax == null) return CodeDocument.Project.Solution;
-            if (ReturnTypeSyntax == null) return CodeDocument.Project.Solution;
-            if (FirstParameterSymbol == null) return CodeDocument.Project.Solution;
-            if (ReturnTypeSymbol == null) return CodeDocument.Project.Solution;
+            ParameterSyntax firstParameterSyntax = methodDeclaration.ParameterList.Parameters.First();
+            TypeSyntax returnTypeSyntax = methodDeclaration.ReturnType;
 
-            //TODO: Determine target TypeSyntax from targetSymbol or targetType
-            var mapInfo = new MapPair(FirstParameterSymbol, FirstParameterSyntax.Identifier.ValueText, ReturnTypeSymbol, "target", ReturnTypeSyntax);
-            
-            var bodyBuilder = new MethodBodyBuilder();
-            var methodBody = bodyBuilder.BuildMethodBody(mapInfo);
+            SemanticModel model = await document.GetSemanticModelAsync(cancellationToken);
+            var firstParm = model.GetDeclaredSymbol(firstParameterSyntax);
+            INamedTypeSymbol firstParameterSymbol = firstParm.Type as INamedTypeSymbol;
+            var returnType = model.GetSymbolInfo(returnTypeSyntax);
+            INamedTypeSymbol returnTypeSymbol = returnType.Symbol as INamedTypeSymbol;
+
+            var sourceItem = new MapItem() {Name = firstParameterSyntax.Identifier.ValueText, Syntax = firstParameterSyntax.Type, Symbol = firstParameterSymbol};
+            var targetItem = new MapItem() {Name = "target", Syntax = returnTypeSyntax, Symbol = returnTypeSymbol};
+
+            var methodBody = BuildMethodBody(sourceItem, targetItem);
             
             //root syntax tree
-            var treeRoot = await CodeDocument.GetSyntaxRootAsync(cancellationToken);
-            var newRoot = treeRoot.ReplaceNode(MethodDeclaration.Body, methodBody);
-            var newDoc = CodeDocument.WithSyntaxRoot(newRoot);
+            var treeRoot = await document.GetSyntaxRootAsync(cancellationToken);
+            var newRoot = treeRoot.ReplaceNode(methodDeclaration.Body, methodBody);
+            var newDoc = document.WithSyntaxRoot(newRoot);
             
             var newSolution = newDoc.Project.Solution;
             
@@ -68,46 +77,66 @@ namespace Cartographer.Mappers
             return newSolution;
         }
 
-        /// <summary>
-        /// Perform an initial check to see if the syntax matches what we expect.
-        /// If this method returns false, CanMap will not be called.
-        /// </summary>
-        private bool CanMapBasedOnSyntax(MethodDeclarationSyntax methodDeclaration)
+        public BlockSyntax BuildMethodBody(MapItem source, MapItem target)
         {
-            if (methodDeclaration == null) return false;
-            if (methodDeclaration.ReturnType.IsKind(SyntaxKind.VoidKeyword)) return false;
-            if (methodDeclaration.ReturnType.IsKind(SyntaxKind.PredefinedType)) return false;
-            if (methodDeclaration.ParameterList == null) return false;
+            var allStatements = BuildAllBodyStatements(source, target);
 
-            FirstParameterSyntax = methodDeclaration.ParameterList?.Parameters.FirstOrDefault();
-            if (FirstParameterSyntax == null) return false;
+            var methodBody = SyntaxFactory.Block()
+                .WithStatements(SyntaxFactory.List<StatementSyntax>(allStatements));
 
-            ReturnTypeSyntax = methodDeclaration.ReturnType;
-            if (ReturnTypeSyntax == null) return false;
-
-            MethodDeclaration = methodDeclaration;
-            return true;
+            return methodBody;
         }
 
-        private async Task<bool> CanMapBasedOnSemanticModel(Document document)
+        private List<StatementSyntax> BuildAllBodyStatements(MapItem source, MapItem target)
         {
-            if (FirstParameterSyntax == null) return false;
-            if (ReturnTypeSyntax == null) return false;
+            var allStatements = new List<StatementSyntax>();
 
-            CodeDocument = document;
-            CodeModel = await document.GetSemanticModelAsync();
+            var targetDeclaration = BuildVariableDeclarationStatement(target.Syntax, target.Name);
+            allStatements.Add(targetDeclaration);
 
-            var firstParm = CodeModel.GetDeclaredSymbol(FirstParameterSyntax);
-            FirstParameterSymbol = firstParm.Type as INamedTypeSymbol;
-            if (FirstParameterSymbol == null) return false;
-            if (FirstParameterSymbol.TypeKind == TypeKind.Enum) return false;
+            var mappingStatements = BuildSourceToTargetMappingStatements(source, target);
+            allStatements.AddRange(mappingStatements);
 
-            var returnType = CodeModel.GetSymbolInfo(ReturnTypeSyntax);
-            ReturnTypeSymbol = returnType.Symbol as INamedTypeSymbol;
-            if (ReturnTypeSymbol == null) return false;
-            if (ReturnTypeSymbol.TypeKind == TypeKind.Enum) return false;
+            var returnStatement = BuildReturnStatement(target.Name);
+            allStatements.Add(returnStatement);
+            return allStatements;
+        }
 
-            return true;
+        // return target;
+        private ReturnStatementSyntax BuildReturnStatement(string targetVariableName)
+        {
+            return SyntaxFactory.ReturnStatement(
+                SyntaxFactory.Token(SyntaxKind.ReturnKeyword),
+                SyntaxFactory.IdentifierName(targetVariableName),
+                SyntaxFactory.Token(SyntaxFactory.TriviaList(), SyntaxKind.SemicolonToken, SyntaxFactory.TriviaList())
+                )
+                .WithLeadingTrivia(SyntaxFactory.TriviaList(SyntaxFactory.CarriageReturnLineFeed, SyntaxFactory.CarriageReturnLineFeed));
+        }
+
+        // Class1 target = new Class1();
+        private LocalDeclarationStatementSyntax BuildVariableDeclarationStatement(TypeSyntax targetVariableType, string targetVariableName)
+        {
+            return SyntaxFactory.LocalDeclarationStatement(BuildVariableDeclaration(targetVariableType,
+                targetVariableName))
+                .WithSemicolonToken(SyntaxFactory.Token(SyntaxFactory.TriviaList(), SyntaxKind.SemicolonToken,
+                    SyntaxFactory.TriviaList(SyntaxFactory.CarriageReturnLineFeed, SyntaxFactory.CarriageReturnLineFeed)));
+        }
+
+        // The "target = new Class1()" portion of "Class1 target = new Class1();"
+        private VariableDeclarationSyntax BuildVariableDeclaration(TypeSyntax variableType, string variableName)
+        {
+            return SyntaxFactory.VariableDeclaration(variableType,
+                    SyntaxFactory.SingletonSeparatedList<VariableDeclaratorSyntax>(
+                        SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier(SyntaxFactory.TriviaList(), variableName, SyntaxFactory.TriviaList(SyntaxFactory.Space)))
+                            .WithInitializer(
+                                SyntaxFactory.EqualsValueClause(
+                                    SyntaxFactory.ObjectCreationExpression(SyntaxFactory.IdentifierName(variableType.ToString()))
+                                    .WithNewKeyword(SyntaxFactory.Token(SyntaxFactory.TriviaList(SyntaxFactory.Space), SyntaxKind.NewKeyword, SyntaxFactory.TriviaList(SyntaxFactory.Space)))
+                                    .WithArgumentList(SyntaxFactory.ArgumentList())
+                                )
+                            )
+                    )
+            );
         }
 
     }

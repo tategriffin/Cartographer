@@ -1,5 +1,4 @@
 C:\WS\Cartographer\Cartographer\Cartographer\bin\Debug\Cartographer.dll
 C:\WS\Cartographer\Cartographer\Cartographer\bin\Debug\Cartographer.pdb
-C:\WS\Cartographer\Cartographer\Cartographer\obj\Debug\Cartographer.csprojResolveAssemblyReference.cache
 C:\WS\Cartographer\Cartographer\Cartographer\obj\Debug\Cartographer.dll
 C:\WS\Cartographer\Cartographer\Cartographer\obj\Debug\Cartographer.pdb

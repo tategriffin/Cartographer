@@ -34,7 +34,7 @@ namespace Cartographer
                 if (await mapper.CanMap(context.Document, methodDecl))
                 {
                     // Register mapping code action.
-                    var action = CodeAction.Create(mapper.Description, c => mapper.Map(c));
+                    var action = CodeAction.Create(mapper.Description, c => mapper.Map(context.Document, methodDecl, c));
                     context.RegisterRefactoring(action);
 
                     break;

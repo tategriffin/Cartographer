@@ -15,6 +15,6 @@ namespace Cartographer
         /// </summary>
         Task<bool> CanMap(Document document, MethodDeclarationSyntax methodDeclaration);
 
-        Task<Solution> Map(CancellationToken cancellationToken);
+        Task<Solution> Map(Document document, MethodDeclarationSyntax methodDeclaration, CancellationToken cancellationToken);
     }
 }
