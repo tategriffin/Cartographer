@@ -1,3 +1,0 @@
-C:\Users\tgriffin.RSLAB\AppData\Local\Microsoft\VisualStudio\14.0Roslyn\Extensions\tgriffin\Cartographer.Vsix\1.0\\Cartographer.dll
-C:\Users\tgriffin.RSLAB\AppData\Local\Microsoft\VisualStudio\14.0Roslyn\Extensions\tgriffin\Cartographer.Vsix\1.0\\extension.vsixmanifest
-C:\Users\tgriffin.RSLAB\AppData\Local\Microsoft\VisualStudio\14.0Roslyn\Extensions\tgriffin\Cartographer.Vsix\1.0\\Cartographer.pdb
