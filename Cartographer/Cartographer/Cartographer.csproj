@@ -34,10 +34,22 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CartographerCodeRefactoringProvider.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="Filters\Compound\MethodHasAtLeastOneParameterAndReturnsNonPredefinedType.cs" />
+    <Compile Include="Filters\Compound\MethodHasAtLeastTwoParametersAndReturnsVoid.cs" />
+    <Compile Include="Filters\Compound\MethodReturnsNamedType.cs" />
+    <Compile Include="Filters\IMethodFilter.cs" />
+    <Compile Include="Filters\Compound\CompoundMethodFilter.cs" />
+    <Compile Include="Filters\MethodDoesNotReturnPredefinedType.cs" />
+    <Compile Include="Filters\MethodDoesNotReturnVoid.cs" />
+    <Compile Include="Filters\MethodHasAtLeastNParameters.cs" />
+    <Compile Include="Filters\MethodReturnsPredefinedType.cs" />
+    <Compile Include="Filters\MethodReturnsVoid.cs" />
+    <Compile Include="IRefactoringProvider.cs" />
     <Compile Include="MapItem.cs" />
     <Compile Include="Mappers\ClassMapper.cs" />
     <Compile Include="Mappers\FirstParameterToReturnTypeClassMapper.cs" />
-    <Compile Include="IMapper.cs" />
+    <Compile Include="Mappers\FirstParameterToSecondParameterClassMapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

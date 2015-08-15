@@ -4,90 +4,69 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Cartographer.Filters.Compound;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Cartographer.Mappers
 {
-    internal class FirstParameterToReturnTypeClassMapper : ClassMapper, IMapper
+    internal class FirstParameterToReturnTypeClassMapper : ClassMapper
     {
-        public string Description { get; private set; } = "Map first parameter to return type";
-
-        private string BuildMapperDescription(MethodDeclarationSyntax methodDeclaration, SemanticModel model, INamedTypeSymbol source, INamedTypeSymbol target)
+        public FirstParameterToReturnTypeClassMapper()
         {
-            return $"Map {source.ToMinimalDisplayString(model, methodDeclaration.SpanStart)} to {target.ToMinimalDisplayString(model, methodDeclaration.SpanStart)}";
+            Description = "Map first parameter to return type";
+        }
+
+        private string BuildMapperDescription(MethodDeclarationSyntax methodDeclaration, SemanticModel model, IParameterSymbol source, SymbolInfo target)
+        {
+            return BuildMapperDescription(methodDeclaration, model, source.ToNamedTypeSymbol(), target.ToNamedTypeSymbol());
         }
 
         /// <summary>
         /// Determine whether this mapper can map values based on the method syntax and semantic model.
         /// If this method returns false, Map will not be called.
         /// </summary>
-        public async Task<bool> CanMap(Document document, MethodDeclarationSyntax methodDeclaration)
+        protected override async Task<bool> CanMap(Document document, MethodDeclarationSyntax methodDeclaration)
         {
-            if (methodDeclaration.ReturnType.IsKind(SyntaxKind.VoidKeyword)) return false;
-            if (methodDeclaration.ReturnType.IsKind(SyntaxKind.PredefinedType)) return false;
+            if (! await new MethodHasAtLeastOneParameterAndReturnsNonPredefinedType().IsSatisfiedByAsync(document, methodDeclaration)) return false;
 
-            ParameterSyntax firstParameterSyntax = methodDeclaration.ParameterList?.Parameters.FirstOrDefault();
-            if (firstParameterSyntax == null) return false;
-
+            ParameterSyntax firstParameterSyntax = methodDeclaration.ParameterList.Parameters.First();
             TypeSyntax returnTypeSyntax = methodDeclaration.ReturnType;
-            if (returnTypeSyntax == null) return false;
 
             SemanticModel model = await document.GetSemanticModelAsync();
-
             var firstParm = model.GetDeclaredSymbol(firstParameterSyntax);
-            INamedTypeSymbol firstParameterSymbol = firstParm.Type as INamedTypeSymbol;
-            if (firstParameterSymbol == null) return false;
-            if (firstParameterSymbol.TypeKind == TypeKind.Enum) return false;
-
             var returnType = model.GetSymbolInfo(returnTypeSyntax);
-            INamedTypeSymbol returnTypeSymbol = returnType.Symbol as INamedTypeSymbol;
-            if (returnTypeSymbol == null) return false;
-            if (returnTypeSymbol.TypeKind == TypeKind.Enum) return false;
 
-            Description = BuildMapperDescription(methodDeclaration, model, firstParameterSymbol, returnTypeSymbol);
-            return true;
+            if (firstParm.IsClass() && returnType.IsClass())
+            {
+                Description = BuildMapperDescription(methodDeclaration, model, firstParm, returnType);
+                return true;
+            }
+
+            return false;
         }
 
-        public async Task<Solution> Map(Document document, MethodDeclarationSyntax methodDeclaration, CancellationToken cancellationToken)
+        protected override async Task<Solution> Map(Document document, MethodDeclarationSyntax methodDeclaration, CancellationToken cancellationToken)
         {
             ParameterSyntax firstParameterSyntax = methodDeclaration.ParameterList.Parameters.First();
             TypeSyntax returnTypeSyntax = methodDeclaration.ReturnType;
 
             SemanticModel model = await document.GetSemanticModelAsync(cancellationToken);
-            var firstParm = model.GetDeclaredSymbol(firstParameterSyntax);
-            INamedTypeSymbol firstParameterSymbol = firstParm.Type as INamedTypeSymbol;
-            var returnType = model.GetSymbolInfo(returnTypeSyntax);
-            INamedTypeSymbol returnTypeSymbol = returnType.Symbol as INamedTypeSymbol;
+            INamedTypeSymbol firstParameter = model.GetDeclaredSymbol(firstParameterSyntax).ToNamedTypeSymbol();
+            INamedTypeSymbol returnTypeSymbol = model.GetSymbolInfo(returnTypeSyntax).ToNamedTypeSymbol();
 
-            var sourceItem = new MapItem() {Name = firstParameterSyntax.Identifier.ValueText, Syntax = firstParameterSyntax.Type, Symbol = firstParameterSymbol};
+            var sourceItem = new MapItem() {Name = firstParameterSyntax.Identifier.ValueText, Syntax = firstParameterSyntax.Type, Symbol = firstParameter};
             var targetItem = new MapItem() {Name = "target", Syntax = returnTypeSyntax, Symbol = returnTypeSymbol};
 
             var methodBody = BuildMethodBody(sourceItem, targetItem);
-            
-            //root syntax tree
-            var treeRoot = await document.GetSyntaxRootAsync(cancellationToken);
-            var newRoot = treeRoot.ReplaceNode(methodDeclaration.Body, methodBody);
-            var newDoc = document.WithSyntaxRoot(newRoot);
-            
-            var newSolution = newDoc.Project.Solution;
-            
-            // Return the new solution with the mapped values.
+            var newSolution = await BuildSolutionWithNewMethodBody(document, methodDeclaration, cancellationToken, methodBody);
+
+            // Return the new solution with the method containing the mapping code.
             return newSolution;
         }
 
-        public BlockSyntax BuildMethodBody(MapItem source, MapItem target)
-        {
-            var allStatements = BuildAllBodyStatements(source, target);
-
-            var methodBody = SyntaxFactory.Block()
-                .WithStatements(SyntaxFactory.List<StatementSyntax>(allStatements));
-
-            return methodBody;
-        }
-
-        private List<StatementSyntax> BuildAllBodyStatements(MapItem source, MapItem target)
+        protected override List<StatementSyntax> BuildAllBodyStatements(MapItem source, MapItem target)
         {
             var allStatements = new List<StatementSyntax>();
 

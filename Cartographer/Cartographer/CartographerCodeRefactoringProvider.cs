@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Composition;
 using System.Linq;
@@ -19,36 +20,43 @@ namespace Cartographer
     {
         public sealed override async Task ComputeRefactoringsAsync(CodeRefactoringContext context)
         {
-            var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-
-            // Find the node at the selection.
-            var node = root.FindNode(context.Span);
-
-            // Only offer a refactoring if the selected node is a method declaration node.
-            var methodDecl = node as MethodDeclarationSyntax;
-            if (methodDecl == null) return;
-
-            // Only offer a refactoring if the method declaration node matches a signature pattern we recognize.
-            var supportedMappers = BuildMapperList();
-            foreach (var mapper in supportedMappers)
+            try
             {
-                if (await mapper.CanMap(context.Document, methodDecl))
-                {
-                    // Register mapping code action.
-                    var action = CodeAction.Create(mapper.Description, c => mapper.Map(context.Document, methodDecl, c));
-                    context.RegisterRefactoring(action);
+                var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
-                    break;
+                // Find the node at the selection.
+                var node = root.FindNode(context.Span);
+
+                // Only offer a refactoring if the selected node is a method declaration node.
+                var methodDecl = node as MethodDeclarationSyntax;
+                if (methodDecl == null) return;
+
+                // Only offer a refactoring if the method declaration node matches a signature pattern we recognize.
+                var refactoringProviderList = BuildRefactoringProviderList();
+                foreach (var mapper in refactoringProviderList)
+                {
+                    if (await mapper.CanRefactor(context.Document, methodDecl))
+                    {
+                        // Register mapping code action.
+                        var action = CodeAction.Create(mapper.Description, c => mapper.Refactor(context.Document, methodDecl, c));
+                        context.RegisterRefactoring(action);
+
+                        break;
+                    }
                 }
             }
-
+            catch (Exception ex)
+            {
+                string error = ex.ToString();
+            }
         }
 
-        private List<IMapper> BuildMapperList()
+        private List<IRefactoringProvider> BuildRefactoringProviderList()
         {
-            var supportedMappers = new List<IMapper>();
+            var supportedMappers = new List<IRefactoringProvider>();
 
             supportedMappers.Add(new FirstParameterToReturnTypeClassMapper());
+            supportedMappers.Add(new FirstParameterToSecondParameterClassMapper());
 
             return supportedMappers;
         } 
