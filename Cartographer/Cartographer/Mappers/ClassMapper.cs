@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Cartographer.Comparers;
+using Cartographer.Comparers.Class;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -15,6 +17,17 @@ namespace Cartographer.Mappers
     /// </summary>
     internal abstract class ClassMapper : IRefactoringProvider
     {
+        protected List<IClassPropertyComparer> ClassPropertyComparers;
+
+        protected ClassMapper()
+        {
+            ClassPropertyComparers = new List<IClassPropertyComparer>
+            {
+                new PropertyTypeAndNameComparer(),
+                new PropertyTypeAndNameCaseInsensitiveComparer()
+            };
+        }
+
         protected abstract Task<bool> CanMap(Document document, MethodDeclarationSyntax methodDeclaration);
 
         protected abstract Task<Solution> Map(Document document, MethodDeclarationSyntax methodDeclaration, CancellationToken cancellationToken);
@@ -65,27 +78,14 @@ namespace Cartographer.Mappers
         {
             var mappingStatements = new List<StatementSyntax>();
 
+            var propertyFinder = new ClassPropertyFinder();
             foreach (var srcProperty in sourceProperties)
             {
-                //TODO: This will only work for exact matches
-                var trgtProperty = targetProperties.FirstOrDefault(p => p.Name == srcProperty.Name);
+                var trgtProperty = propertyFinder.FindBestMatch(srcProperty, targetProperties, ClassPropertyComparers);
                 if (trgtProperty != null)
                 {
                     //add mapping statement
-                    var stmt = SyntaxFactory.ExpressionStatement(
-                        SyntaxFactory.AssignmentExpression(
-                            SyntaxKind.SimpleAssignmentExpression,
-                            SyntaxFactory.MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                SyntaxFactory.IdentifierName(targetVariableName),
-                                SyntaxFactory.IdentifierName(trgtProperty.Name)),
-                            SyntaxFactory.MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                SyntaxFactory.IdentifierName(sourceVariableName),
-                                SyntaxFactory.IdentifierName(srcProperty.Name))
-                            )
-                        );
-
+                    var stmt = BuildSourceToTargetMappingStatement(srcProperty, sourceVariableName, trgtProperty, targetVariableName);
                     mappingStatements.Add(stmt);
 
                     //Only map once
@@ -94,6 +94,25 @@ namespace Cartographer.Mappers
             }
 
             return mappingStatements;
+        }
+
+        protected StatementSyntax BuildSourceToTargetMappingStatement(IPropertySymbol sourceProperty, string sourceVariableName, IPropertySymbol targetProperty, string targetVariableName)
+        {
+            var statement = SyntaxFactory.ExpressionStatement(
+                SyntaxFactory.AssignmentExpression(
+                    SyntaxKind.SimpleAssignmentExpression,
+                    SyntaxFactory.MemberAccessExpression(
+                        SyntaxKind.SimpleMemberAccessExpression,
+                        SyntaxFactory.IdentifierName(targetVariableName),
+                        SyntaxFactory.IdentifierName(targetProperty.Name)),
+                    SyntaxFactory.MemberAccessExpression(
+                        SyntaxKind.SimpleMemberAccessExpression,
+                        SyntaxFactory.IdentifierName(sourceVariableName),
+                        SyntaxFactory.IdentifierName(sourceProperty.Name))
+                    )
+                );
+
+            return statement;
         }
 
         protected async Task<Solution> BuildSolutionWithNewMethodBody(Document document, MethodDeclarationSyntax methodDeclaration,

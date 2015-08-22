@@ -34,6 +34,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CartographerCodeRefactoringProvider.cs" />
+    <Compile Include="Comparers\Class\CompoundClassPropertyComparer.cs" />
+    <Compile Include="Comparers\Class\ClassPropertyFinder.cs" />
+    <Compile Include="Comparers\Class\PropertyTypeAndNameComparer.cs" />
+    <Compile Include="Comparers\Class\PropertyTypeAndNameCaseInsensitiveComparer.cs" />
+    <Compile Include="Comparers\Class\TypeComparer.cs" />
+    <Compile Include="Comparers\NameComparerCaseInsensitive.cs" />
+    <Compile Include="Comparers\NameComparer.cs" />
+    <Compile Include="Comparers\Class\IClassPropertyComparer.cs" />
+    <Compile Include="Comparers\SimilarityRank.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Filters\Compound\MethodHasAtLeastOneParameterAndReturnsNonPredefinedType.cs" />
     <Compile Include="Filters\Compound\MethodHasAtLeastTwoParametersAndReturnsVoid.cs" />
