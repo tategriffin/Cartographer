@@ -19,9 +19,15 @@ namespace Cartographer.Filters
 
         public virtual async Task<bool> IsSatisfiedByAsync(Document document, MethodDeclarationSyntax methodDeclaration)
         {
+            return await Task.FromResult(IsSatisfiedBy(document, methodDeclaration));
+        }
+
+        private bool IsSatisfiedBy(Document document, MethodDeclarationSyntax methodDeclaration)
+        {
             var numOfParameters = methodDeclaration.ParameterList?.Parameters.Count ?? 0;
 
             return (numOfParameters >= MinimumNumberOfParameters);
         }
+
     }
 }

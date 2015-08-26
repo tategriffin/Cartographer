@@ -12,7 +12,7 @@ namespace Cartographer.Filters
     {
         public virtual async Task<bool> IsSatisfiedByAsync(Document document, MethodDeclarationSyntax methodDeclaration)
         {
-            return methodDeclaration.ReturnType.IsKind(SyntaxKind.PredefinedType);
+            return await Task.FromResult(methodDeclaration.ReturnType.IsKind(SyntaxKind.PredefinedType));
         }
     }
 }
