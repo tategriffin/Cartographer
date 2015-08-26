@@ -28,9 +28,9 @@ namespace Cartographer.Mappers
             };
         }
 
-        protected abstract Task<bool> CanMap(Document document, MethodDeclarationSyntax methodDeclaration);
+        protected abstract Task<bool> CanMapAsync(Document document, MethodDeclarationSyntax methodDeclaration);
 
-        protected abstract Task<Solution> Map(Document document, MethodDeclarationSyntax methodDeclaration, CancellationToken cancellationToken);
+        protected abstract Task<Solution> MapAsync(Document document, MethodDeclarationSyntax methodDeclaration, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sub classes must implement this method to build the actual statements within the method body.
@@ -133,7 +133,7 @@ namespace Cartographer.Mappers
         {
             try
             {
-                return await CanMap(document, methodDeclaration);
+                return await CanMapAsync(document, methodDeclaration);
             }
             catch (Exception ex)
             {
@@ -146,7 +146,7 @@ namespace Cartographer.Mappers
         {
             try
             {
-                return await Map(document, methodDeclaration, cancellationToken);
+                return await MapAsync(document, methodDeclaration, cancellationToken);
             }
             catch (Exception ex)
             {

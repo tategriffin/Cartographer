@@ -25,9 +25,9 @@ namespace Cartographer.Mappers
 
         /// <summary>
         /// Determine whether this mapper can map values based on the method syntax and semantic model.
-        /// If this method returns false, Map will not be called.
+        /// If this method returns false, MapAsync will not be called.
         /// </summary>
-        protected override async Task<bool> CanMap(Document document, MethodDeclarationSyntax methodDeclaration)
+        protected override async Task<bool> CanMapAsync(Document document, MethodDeclarationSyntax methodDeclaration)
         {
             if (! await new MethodHasAtLeastOneParameterAndReturnsNonPredefinedType().IsSatisfiedByAsync(document, methodDeclaration)) return false;
 
@@ -47,7 +47,7 @@ namespace Cartographer.Mappers
             return false;
         }
 
-        protected override async Task<Solution> Map(Document document, MethodDeclarationSyntax methodDeclaration, CancellationToken cancellationToken)
+        protected override async Task<Solution> MapAsync(Document document, MethodDeclarationSyntax methodDeclaration, CancellationToken cancellationToken)
         {
             ParameterSyntax firstParameterSyntax = methodDeclaration.ParameterList.Parameters.First();
             TypeSyntax returnTypeSyntax = methodDeclaration.ReturnType;
