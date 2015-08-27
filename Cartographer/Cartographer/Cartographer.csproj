@@ -40,8 +40,8 @@
     <Compile Include="Comparers\Class\PropertyTypeAndNameComparer.cs" />
     <Compile Include="Comparers\Class\PropertyTypeAndNameCaseInsensitiveComparer.cs" />
     <Compile Include="Comparers\Class\TypeComparer.cs" />
-    <Compile Include="Comparers\NameComparerCaseInsensitive.cs" />
-    <Compile Include="Comparers\NameComparer.cs" />
+    <Compile Include="Comparers\Class\PropertyNameComparerCaseInsensitive.cs" />
+    <Compile Include="Comparers\Class\PropertyNameComparer.cs" />
     <Compile Include="Comparers\Class\IClassPropertyComparer.cs" />
     <Compile Include="Comparers\SimilarityRank.cs" />
     <Compile Include="Extensions.cs" />

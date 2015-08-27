@@ -23,11 +23,6 @@ namespace Cartographer
 
     internal static class SymbolInfoExtensions
     {
-        public static INamedTypeSymbol ToNamedTypeSymbol(this SymbolInfo info)
-        {
-            return info.Symbol as INamedTypeSymbol;
-        }
-
         public static bool IsEnum(this SymbolInfo info)
         {
             return (info.ToNamedTypeSymbol()).IsEnum();
@@ -38,6 +33,10 @@ namespace Cartographer
             return (info.ToNamedTypeSymbol()).IsClass();
         }
 
+        public static INamedTypeSymbol ToNamedTypeSymbol(this SymbolInfo info)
+        {
+            return info.Symbol as INamedTypeSymbol;
+        }
     }
 
     internal static class ParameterSymbolExtensions

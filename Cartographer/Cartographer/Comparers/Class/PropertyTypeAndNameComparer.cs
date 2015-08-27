@@ -14,7 +14,7 @@ namespace Cartographer.Comparers.Class
             return new List<IClassPropertyComparer>()
             {
                 new TypeComparer(),
-                new NameComparer(),
+                new PropertyNameComparer(),
             };
         }
     }

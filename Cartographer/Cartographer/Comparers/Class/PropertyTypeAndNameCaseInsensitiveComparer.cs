@@ -13,7 +13,7 @@ namespace Cartographer.Comparers.Class
             return new List<IClassPropertyComparer>()
             {
                 new TypeComparer(),
-                new NameComparerCaseInsensitive()
+                new PropertyNameComparerCaseInsensitive()
             };
         }
     }

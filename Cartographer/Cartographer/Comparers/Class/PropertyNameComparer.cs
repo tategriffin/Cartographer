@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Cartographer.Comparers.Class;
 using Microsoft.CodeAnalysis;
 
-namespace Cartographer.Comparers
+namespace Cartographer.Comparers.Class
 {
-    internal class NameComparer : IClassPropertyComparer
+    internal class PropertyNameComparer : IClassPropertyComparer
     {
         public SimilarityRank<IPropertySymbol> Compare(IPropertySymbol sourceProperty, IPropertySymbol targetProperty)
         {
