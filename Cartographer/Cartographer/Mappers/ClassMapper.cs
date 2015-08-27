@@ -23,8 +23,8 @@ namespace Cartographer.Mappers
         {
             ClassPropertyComparers = new List<IClassPropertyComparer>
             {
-                new PropertyTypeAndNameComparer(),
-                new PropertyTypeAndNameCaseInsensitiveComparer()
+                new PropertyNameAndTypeComparer(),
+                new PropertyNameAndTypeCaseInsensitiveComparer()
             };
         }
 

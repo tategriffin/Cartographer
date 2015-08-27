@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cartographer.Comparers.Class
 {
-    internal class PropertyTypeAndNameCaseInsensitiveComparer : CompoundClassPropertyComparer
+    internal class PropertyNameAndTypeCaseInsensitiveComparer : CompoundClassPropertyComparer
     {
         protected override List<IClassPropertyComparer> BuildComparers()
         {

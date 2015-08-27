@@ -37,8 +37,8 @@
     <Compile Include="CartographerCodeRefactoringProvider.cs" />
     <Compile Include="Comparers\Class\CompoundClassPropertyComparer.cs" />
     <Compile Include="Comparers\Class\ClassPropertyFinder.cs" />
-    <Compile Include="Comparers\Class\PropertyTypeAndNameComparer.cs" />
-    <Compile Include="Comparers\Class\PropertyTypeAndNameCaseInsensitiveComparer.cs" />
+    <Compile Include="Comparers\Class\PropertyNameAndTypeComparer.cs" />
+    <Compile Include="Comparers\Class\PropertyNameAndTypeCaseInsensitiveComparer.cs" />
     <Compile Include="Comparers\Class\TypeComparer.cs" />
     <Compile Include="Comparers\Class\PropertyNameComparerCaseInsensitive.cs" />
     <Compile Include="Comparers\Class\PropertyNameComparer.cs" />

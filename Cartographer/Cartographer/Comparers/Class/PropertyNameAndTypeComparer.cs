@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Cartographer.Comparers.Class
 {
-    internal class PropertyTypeAndNameComparer : CompoundClassPropertyComparer
+    internal class PropertyNameAndTypeComparer : CompoundClassPropertyComparer
     {
         protected override List<IClassPropertyComparer> BuildComparers()
         {
