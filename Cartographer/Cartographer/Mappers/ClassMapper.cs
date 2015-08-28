@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Cartographer.Comparers;
 using Cartographer.Comparers.Class;
+using Cartographer.Comparers.Class.Property;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;

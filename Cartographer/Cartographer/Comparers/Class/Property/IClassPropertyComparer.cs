@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace Cartographer.Comparers.Class
+namespace Cartographer.Comparers.Class.Property
 {
     interface IClassPropertyComparer
     {

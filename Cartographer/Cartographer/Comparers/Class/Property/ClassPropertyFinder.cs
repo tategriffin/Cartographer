@@ -2,16 +2,23 @@
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
-namespace Cartographer.Comparers.Class
+namespace Cartographer.Comparers.Class.Property
 {
     internal class ClassPropertyFinder
     {
         public virtual IPropertySymbol FindBestMatch(IPropertySymbol sourceProperty, IEnumerable<IPropertySymbol> targetProperties, List<IClassPropertyComparer> allComparers)
         {
+            var rank = FindSimilarityRank(sourceProperty, targetProperties, allComparers);
+
+            return rank.Symbol;
+        }
+
+        public virtual SimilarityRank<IPropertySymbol> FindSimilarityRank(IPropertySymbol sourceProperty, IEnumerable<IPropertySymbol> targetProperties, List<IClassPropertyComparer> allComparers)
+        {
             var allMatches = FindAllMatches(sourceProperty, targetProperties, allComparers);
             var topMatch = allMatches.OrderByDescending(r => r.Confidence).FirstOrDefault(r => r.Confidence > 0);
 
-            return (topMatch != null ? topMatch.Symbol : new SimilarityRank<IPropertySymbol>().Symbol);
+            return (topMatch ?? new SimilarityRank<IPropertySymbol>());
         }
 
         private List<SimilarityRank<IPropertySymbol>> FindAllMatches(IPropertySymbol sourceProperty, IEnumerable<IPropertySymbol> targetProperties, List<IClassPropertyComparer> allComparers)

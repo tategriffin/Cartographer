@@ -35,14 +35,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CartographerCodeRefactoringProvider.cs" />
-    <Compile Include="Comparers\Class\CompoundClassPropertyComparer.cs" />
-    <Compile Include="Comparers\Class\ClassPropertyFinder.cs" />
-    <Compile Include="Comparers\Class\PropertyNameAndTypeComparer.cs" />
-    <Compile Include="Comparers\Class\PropertyNameAndTypeCaseInsensitiveComparer.cs" />
-    <Compile Include="Comparers\Class\TypeComparer.cs" />
-    <Compile Include="Comparers\Class\PropertyNameComparerCaseInsensitive.cs" />
-    <Compile Include="Comparers\Class\PropertyNameComparer.cs" />
-    <Compile Include="Comparers\Class\IClassPropertyComparer.cs" />
+    <Compile Include="Comparers\Class\Property\CompoundClassPropertyComparer.cs" />
+    <Compile Include="Comparers\Class\Property\ClassPropertyFinder.cs" />
+    <Compile Include="Comparers\Class\Property\PropertyNameAndTypeComparer.cs" />
+    <Compile Include="Comparers\Class\Property\PropertyNameAndTypeCaseInsensitiveComparer.cs" />
+    <Compile Include="Comparers\Class\Property\TypeComparer.cs" />
+    <Compile Include="Comparers\Class\Property\PropertyNameComparerCaseInsensitive.cs" />
+    <Compile Include="Comparers\Class\Property\PropertyNameComparer.cs" />
+    <Compile Include="Comparers\Class\Property\IClassPropertyComparer.cs" />
     <Compile Include="Comparers\SimilarityRank.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Filters\Compound\MethodHasAtLeastOneParameterAndReturnsNonPredefinedType.cs" />

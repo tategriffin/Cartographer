@@ -2,7 +2,7 @@
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
-namespace Cartographer.Comparers.Class
+namespace Cartographer.Comparers.Class.Property
 {
     internal abstract class CompoundClassPropertyComparer : IClassPropertyComparer
     {

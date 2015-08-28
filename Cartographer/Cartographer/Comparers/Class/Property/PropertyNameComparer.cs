@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.CodeAnalysis;
 
-namespace Cartographer.Comparers.Class
+namespace Cartographer.Comparers.Class.Property
 {
     internal class PropertyNameComparer : IClassPropertyComparer
     {
