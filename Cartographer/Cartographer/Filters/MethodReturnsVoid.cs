@@ -11,7 +11,7 @@ namespace Cartographer.Filters
 {
     internal class MethodReturnsVoid : IMethodFilter
     {
-        public async Task<bool> IsSatisfiedByAsync(Document document, MethodDeclarationSyntax methodDeclaration)
+        public virtual async Task<bool> IsSatisfiedByAsync(Document document, MethodDeclarationSyntax methodDeclaration)
         {
             return await Task.FromResult((methodDeclaration.ReturnType as PredefinedTypeSyntax)?.Keyword.Kind() == SyntaxKind.VoidKeyword);
         }
