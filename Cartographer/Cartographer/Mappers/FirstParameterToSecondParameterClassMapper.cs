@@ -38,13 +38,18 @@ namespace Cartographer.Mappers
             var firstParm = model.GetDeclaredSymbol(firstParameterSyntax);
             var secondParm = model.GetDeclaredSymbol(secondParameterSyntax);
 
-            if (firstParm.IsClass() && secondParm.IsClass())
+            if (CanProbablyMap(firstParm, secondParm))
             {
                 Description = BuildMapperDescription(methodDeclaration, model, firstParm, secondParm);
                 return true;
             }
 
             return false;
+        }
+
+        private bool CanProbablyMap(IParameterSymbol sourceTypeSymbol, IParameterSymbol targetTypeSymbol)
+        {
+            return CanProbablyMap(sourceTypeSymbol.ToNamedTypeSymbol(), targetTypeSymbol.ToNamedTypeSymbol());
         }
 
         protected override async Task<Solution> MapAsync(Document document, MethodDeclarationSyntax methodDeclaration, CancellationToken cancellationToken)

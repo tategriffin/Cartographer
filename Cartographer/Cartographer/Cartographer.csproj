@@ -35,14 +35,17 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CartographerCodeRefactoringProvider.cs" />
+    <Compile Include="Comparers\Class\ClassComparer.cs" />
     <Compile Include="Comparers\Class\Property\CompoundClassPropertyComparer.cs" />
     <Compile Include="Comparers\Class\Property\ClassPropertyFinder.cs" />
+    <Compile Include="Comparers\Class\Property\PropertyCountComparer.cs" />
     <Compile Include="Comparers\Class\Property\PropertyNameAndTypeComparer.cs" />
     <Compile Include="Comparers\Class\Property\PropertyNameAndTypeCaseInsensitiveComparer.cs" />
     <Compile Include="Comparers\Class\Property\TypeComparer.cs" />
     <Compile Include="Comparers\Class\Property\PropertyNameComparerCaseInsensitive.cs" />
     <Compile Include="Comparers\Class\Property\PropertyNameComparer.cs" />
     <Compile Include="Comparers\Class\Property\IClassPropertyComparer.cs" />
+    <Compile Include="Comparers\NamedTypeComparer.cs" />
     <Compile Include="Comparers\SimilarityRank.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Filters\Compound\MethodHasAtLeastOneParameterAndReturnsNonPredefinedType.cs" />
@@ -60,6 +63,10 @@
     <Compile Include="Mappers\ClassMapper.cs" />
     <Compile Include="Mappers\FirstParameterToReturnTypeClassMapper.cs" />
     <Compile Include="Mappers\FirstParameterToSecondParameterClassMapper.cs" />
+    <Compile Include="Mappers\IMappingProbabilityCalculator.cs" />
+    <Compile Include="Mappers\IncompatibleTypesMappingProbabilityCalculator.cs" />
+    <Compile Include="Mappers\MappingProbabilityCalculatorFactory.cs" />
+    <Compile Include="Mappers\ClassMappingProbabilityCalculator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -33,6 +33,12 @@ namespace Cartographer.Mappers
 
         protected abstract Task<Solution> MapAsync(Document document, MethodDeclarationSyntax methodDeclaration, CancellationToken cancellationToken);
 
+        protected bool CanProbablyMap(INamedTypeSymbol sourceTypeSymbol, INamedTypeSymbol targetTypeSymbol)
+        {
+            var calculator = MappingProbabilityCalculatorFactory.CreateCalculator(sourceTypeSymbol, targetTypeSymbol);
+            return calculator.CanProbablyMap();
+        }
+
         /// <summary>
         /// Sub classes must implement this method to build the actual statements within the method body.
         /// Depending on the method this may include things like instantiating a variable to return,

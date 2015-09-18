@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Cartographer.Comparers.Class;
 using Cartographer.Filters.Compound;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -38,13 +39,18 @@ namespace Cartographer.Mappers
             var firstParm = model.GetDeclaredSymbol(firstParameterSyntax);
             var returnType = model.GetSymbolInfo(returnTypeSyntax);
 
-            if (firstParm.IsClass() && returnType.IsClass())
+            if (CanProbablyMap(firstParm, returnType))
             {
                 Description = BuildMapperDescription(methodDeclaration, model, firstParm, returnType);
                 return true;
             }
 
             return false;
+        }
+
+        private bool CanProbablyMap(IParameterSymbol sourceTypeSymbol, SymbolInfo targetTypeSymbol)
+        {
+            return CanProbablyMap(sourceTypeSymbol.ToNamedTypeSymbol(), targetTypeSymbol.ToNamedTypeSymbol());
         }
 
         protected override async Task<Solution> MapAsync(Document document, MethodDeclarationSyntax methodDeclaration, CancellationToken cancellationToken)
