@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
@@ -11,14 +12,11 @@ namespace Cartographer.Comparers.Class.Property
         public SimilarityRank<IPropertySymbol> Compare(IPropertySymbol sourceProperty, IPropertySymbol targetProperty)
         {
             List<IClassPropertyComparer> allClassPropertyComparers = BuildComparers();
-            List<SimilarityRank<IPropertySymbol>> allResultRanks = CompareAll(sourceProperty, targetProperty, allClassPropertyComparers);
 
-            var bestMatch = FindProbableMatch(allResultRanks);
-            return (bestMatch ?? new SimilarityRank<IPropertySymbol>() { Confidence = 0 });
-
+            return CompoundCompare(sourceProperty, targetProperty, allClassPropertyComparers);
         }
 
-        private List<SimilarityRank<IPropertySymbol>> CompareAll(IPropertySymbol sourceProperty, IPropertySymbol targetProperty, IEnumerable<IClassPropertyComparer> comparers)
+        private SimilarityRank<IPropertySymbol> CompoundCompare(IPropertySymbol sourceProperty, IPropertySymbol targetProperty, IEnumerable<IClassPropertyComparer> comparers)
         {
             List<SimilarityRank<IPropertySymbol>> allResultRanks = new List<SimilarityRank<IPropertySymbol>>();
             foreach (var propertyComparer in comparers)
@@ -26,18 +24,31 @@ namespace Cartographer.Comparers.Class.Property
                 SimilarityRank<IPropertySymbol> rank = propertyComparer.Compare(sourceProperty, targetProperty);
 
                 allResultRanks.Add(rank);
-
-                if(rank.Confidence == 100) break;
             }
 
-            return allResultRanks;
+            return BuildCombinedRank(targetProperty, allResultRanks);
         }
 
-        private SimilarityRank<IPropertySymbol> FindProbableMatch(IEnumerable<SimilarityRank<IPropertySymbol>> allRanks)
+        private SimilarityRank<IPropertySymbol> BuildCombinedRank(IPropertySymbol targetProperty, List<SimilarityRank<IPropertySymbol>> individualComparerRankList)
         {
-            return allRanks
-                .OrderByDescending(r => r.Confidence)
-                .FirstOrDefault(r => r.Confidence > 0);
+            int combinedRank = CalculateCombinedRank(individualComparerRankList);
+
+            return new SimilarityRank<IPropertySymbol>() {Confidence = combinedRank, Symbol = targetProperty};
         }
+
+        private int CalculateCombinedRank(List<SimilarityRank<IPropertySymbol>> individualComparerRankList)
+        {
+            if(individualComparerRankList == null) throw new ArgumentNullException("individualComparerRankList");
+            if (individualComparerRankList.Count == 0) return 0;
+
+            decimal combinedRank = individualComparerRankList.First().Confidence / 100;
+            for (int i = 1; i < individualComparerRankList.Count; i++)  //skip first item since we've already captured it
+            {
+                combinedRank *= (individualComparerRankList[i].Confidence / 100);
+            }
+
+            return Convert.ToInt32((combinedRank*100));
+        }
+
     }
 }
